@@ -3,6 +3,8 @@ import { HashRouter , Switch, Route } from 'react-router-dom'
 import Main from './components/Main/Main'
 import ProductsContainer from './components/Products/ProductsContainer'
 import NotFound from './components/NotFound/NotFound'
+import ProductsContainerUpdate from './components/Products/ProductsContainerUpdate'
+import ProductsContainerCreate from './components/Products/ProductsContainerCreate'
 
 export function getRoutes() {
   return (
@@ -11,8 +13,7 @@ export function getRoutes() {
         <Switch>
           <Route exact path="/" component={ProductsContainer}/>,
           <Route exact path="/products/create" component={ProductsContainerCreate}/>,
-          <Route exact path="/products/update" component={ProductsContainer}/>,
-          <Route exact path="/products/delete" component={ProductsContainer}/>,
+          <Route exact path="/products/update/:id" component={ProductsContainerUpdate}/>,
           <Route path="*" component={NotFound}/>,
         </Switch>
       </Main>

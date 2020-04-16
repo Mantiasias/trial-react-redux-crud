@@ -1,12 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Card, CardText, CardBody, CardTitle, ListGroup, ListGroupItem } from 'reactstrap';
+import { Card, CardText, CardBody, CardTitle, ListGroup, ListGroupItem, Button, ButtonGroup } from 'reactstrap'
 import moment from 'moment'
 
 const shortDateFormat = 'MM/DD/YYYY';
 const longDateFormat = 'MM/DD/YYYY hh:mm a';
 
-const Product = ({ product }) => {
+const Product = ({ product, onDelete, onUpdate }) => {
   const receiptDate =  product.receiptDate ? moment(product.receiptDate).format(shortDateFormat) : '-';
   const expirationDate =  product.expirationDate ? moment(product.expirationDate).format(shortDateFormat) : '-';
   const createdAt = product.createdAt ? moment(product.createdAt).format(longDateFormat) : '-';
@@ -15,7 +15,7 @@ const Product = ({ product }) => {
     <Card>
       <CardBody>
         <CardTitle>{product.name}</CardTitle>
-        <CardText tag="div">
+        <CardText>
           <ListGroup>
             <ListGroupItem>Brand: {product.brand}</ListGroupItem>
             <ListGroupItem>Rating: {product.rating}</ListGroupItem>
@@ -34,6 +34,10 @@ const Product = ({ product }) => {
             <ListGroupItem>Created At: {createdAt}</ListGroupItem>
           </ListGroup>
         </CardText>
+        <ButtonGroup>
+          <Button color="primary" onClick={onUpdate}>Update</Button>
+          <Button color="danger" onClick={onDelete}>Delete</Button>
+        </ButtonGroup>
       </CardBody>
     </Card>
   );
