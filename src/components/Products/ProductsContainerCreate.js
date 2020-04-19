@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import Header from '../Header/Header';
@@ -8,46 +8,64 @@ import { getCategoriesById } from '../../reducers/categories';
 import ProductForm from './ProductForm'
 import Row from 'reactstrap/lib/Row'
 import { Link } from 'react-router-dom'
-import { Container } from 'reactstrap'
+import { Col, Container } from 'reactstrap'
 
-class ProductsContainerCreate extends Component {
-  componentDidMount() {
-    const { dispatch } = this.props;
-    dispatch(fetchCategories());
-  }
+const ProductsContainerCreate = ({
+  history,
+  categoriesById,
+  handleCreateProduct,
+  fetchCategories
+}) => {
+  const fetchCategoriesCallback = useCallback(fetchCategories, [])
+  useEffect(() => {
+    fetchCategoriesCallback()
+  }, [fetchCategoriesCallback])
 
-  createProduct = (productData) => {
-    const { dispatch, history } = this.props;
-    dispatch(createProduct(productData));
+  const createProduct = (productData) => {
+    handleCreateProduct(productData);
     history.push('/')
   }
 
-  render() {
-    const { categoriesById } = this.props
-    return (
-      <Container>
-        <Row>
-          <Link to='/'>Home</Link>
-        </Row>
+  return (
+    <Container>
+      <Row>
+        <Link to='/'>Home</Link>
+      </Row>
+      <Row>
         <Header name="Create Product" />
-        <Row>
-          <ProductForm categoriesById={categoriesById} formCallback={this.createProduct} mode="create" />
-        </Row>
-      </Container>
-    );
-  }
+      </Row>
+      <Row>
+        <Col md={8}>
+          <ProductForm categoriesById={categoriesById} formCallback={createProduct} mode="create" />
+        </Col>
+      </Row>
+    </Container>
+  );
 }
 
 ProductsContainerCreate.propTypes = {
   history: PropTypes.object.isRequired,
-  dispatch: PropTypes.func.isRequired,
   categoriesById: PropTypes.array.isRequired,
+  handleCreateProduct: PropTypes.func.isRequired,
+  fetchCategories: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state) => {
   const categoriesById = getCategoriesById(state);
 
-  return { categoriesById }
+  return {
+    categoriesById: Object.entries(categoriesById)
+  }
 };
 
-export default connect(mapStateToProps)(ProductsContainerCreate);
+const mapDispatchToProps = dispatch => {
+  return {
+    fetchCategories: () => {
+      dispatch(fetchCategories())
+    },
+    handleCreateProduct: (productData) => {
+      dispatch(createProduct(productData))
+    },
+  }
+}
+export default connect(mapStateToProps, mapDispatchToProps)(ProductsContainerCreate);

@@ -1,8 +1,8 @@
 import products from '../mocks/products';
 
 class ProductApi {
-  getProducts = () => {
-    return products;
+  getProducts = (stateProducts) => {
+    return stateProducts.length > 0 ? stateProducts : products;
   }
 }
 

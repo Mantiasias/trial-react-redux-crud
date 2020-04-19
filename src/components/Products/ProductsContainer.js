@@ -1,56 +1,50 @@
-import React, { Component } from 'react'
+import React, { useEffect, useCallback } from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 import { get } from 'lodash'
 import { Button, Container } from 'reactstrap'
 import Header from '../Header/Header'
 import ProductsList from './ProductsList'
-import { fetchCategories } from '../../actions/categories'
 import { fetchProducts, deleteProduct } from '../../actions/products'
 import { getCategoriesById } from '../../reducers/categories'
+import { fetchCategories } from '../../actions/categories'
 
-class ProductsContainer extends Component {
-  componentDidMount() {
-    const { dispatch } = this.props
+const ProductsContainer = ({
+  history,
+  products,
+  fetchCategories,
+  fetchProducts,
+  handleDeleteProduct
+}) => {
+  const fetchCategoriesCallback = useCallback(fetchCategories, [])
+  const fetchProductsCallback = useCallback(fetchProducts, [])
+  useEffect(() => {
+    fetchProductsCallback()
+    fetchCategoriesCallback()
+  }, [fetchCategoriesCallback, fetchProductsCallback])
 
-    dispatch(fetchCategories())
-    dispatch(fetchProducts())
-  }
+  const handleCreateProduct = () => history.push(`/products/create`);
+  const handleUpdateProduct = (id) => history.push(`/products/update/${id}`);
 
-  handleDelete = (id) => {
-    const { dispatch } = this.props
-    dispatch(deleteProduct(id))
-  }
-
-  handleUpdate = (id) => {
-    this.props.history.push(`/products/update/${id}`)
-  }
-
-  handleCreate = () => {
-    this.props.history.push(`/products/create`)
-  }
-
-  render() {
-    const { products } = this.props
-
-    return (
-      <Container>
-        <Header name="Products" />
-        <Button color="primary" onClick={this.handleCreate}>Create Product</Button>
-        <hr />
-        <ProductsList
-          products={products}
-          onDelete={this.handleDelete}
-          onUpdate={this.handleUpdate}
-        />
-      </Container>
-    )
-  }
+  return (
+    <Container>
+      <Header name="Products" />
+      <Button color="primary" onClick={handleCreateProduct}>Create Product</Button>
+      <hr />
+      <ProductsList
+        products={products}
+        onDelete={handleDeleteProduct}
+        onUpdate={handleUpdateProduct}
+      />
+    </Container>
+  )
 }
 
 ProductsContainer.propTypes = {
   products: PropTypes.array.isRequired,
-  dispatch: PropTypes.func.isRequired,
+  fetchCategories: PropTypes.func.isRequired,
+  fetchProducts: PropTypes.func.isRequired,
+  handleDeleteProduct: PropTypes.func.isRequired,
 }
 
 const mapStateToProps = (state) => {
@@ -71,4 +65,18 @@ const mapStateToProps = (state) => {
   }
 }
 
-export default connect(mapStateToProps)(ProductsContainer)
+const mapDispatchToProps = (dispatch) => {
+  return {
+    fetchCategories: () => {
+      dispatch(fetchCategories())
+    },
+    fetchProducts: () => {
+      dispatch(fetchProducts())
+    },
+    handleDeleteProduct: (id) => {
+      dispatch(deleteProduct(id))
+    },
+  }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(ProductsContainer)

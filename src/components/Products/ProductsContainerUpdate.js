@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react'
+import React, { Fragment, useEffect, useCallback } from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 import Header from '../Header/Header'
@@ -7,45 +7,64 @@ import { fetchProducts, updateProduct } from '../../actions/products'
 import { getCategoriesById } from '../../reducers/categories'
 import { getProductsById } from '../../reducers/products'
 import ProductForm from './ProductForm'
+import Row from 'reactstrap/lib/Row'
+import { Link } from 'react-router-dom'
+import { Col } from 'reactstrap'
+import { get } from 'lodash'
 
-class ProductsContainerUpdate extends Component {
-  componentDidMount() {
-    const { dispatch } = this.props
-    dispatch(fetchCategories())
-    dispatch(fetchProducts())
-  }
+const ProductsContainerUpdate = ({
+  history,
+  fetchCategories,
+  fetchProducts,
+  productData,
+  categoriesById,
+  handleUpdateProduct
+}) => {
+  const fetchCategoriesCallback = useCallback(fetchCategories, [])
+  const fetchProductsCallback = useCallback(fetchProducts, [])
+  useEffect(() => {
+    fetchProductsCallback()
+    fetchCategoriesCallback()
+  }, [fetchCategoriesCallback, fetchProductsCallback])
 
-  updateProduct = productData => {
-    const { dispatch, history } = this.props
-    dispatch(updateProduct(productData))
+  const updateProduct = productData => {
+    handleUpdateProduct(productData)
     history.push('/')
   }
 
-  /*
-    - Name is required, length not greater than 200
-    - Rating is required, integer, not greater than 10
-    - A product should have from 1 to 5 categories
-    - If a product has an expiration date it should expire not less than 30 days since now
-    - If a product rating is greater than 8 it should automatically become “featured” product
-   */
-
-  render() {
-    const { productData, categoriesById } = this.props
-    return (
-      <Fragment>
-        <Header name={`Update Product with id= ${productData.id}`} />
-        <ProductForm categoriesById={categoriesById} productData={productData} formCallback={this.updateProduct}
-                     mode="update" />
-      </Fragment>
-    )
+  if (!productData.id) {
+    history.push('/notFound')
   }
+
+  return (
+    <Fragment>
+      <Row>
+        <Link to='/'>Home</Link>
+      </Row>
+      <Row>
+        <Header name={`Update Product with id=${productData.id}`} />
+      </Row>
+      <Row>
+        <Col md={8}>
+          <ProductForm
+            categoriesById={categoriesById}
+            productData={productData}
+            formCallback={updateProduct}
+            mode="update"
+          />
+        </Col>
+      </Row>
+    </Fragment>
+  )
 }
 
 ProductsContainerUpdate.propTypes = {
   productData: PropTypes.object.isRequired,
   history: PropTypes.object.isRequired,
-  dispatch: PropTypes.func.isRequired,
-  categoriesById: PropTypes.object.isRequired
+  categoriesById: PropTypes.array.isRequired,
+  fetchCategories: PropTypes.func.isRequired,
+  fetchProducts: PropTypes.func.isRequired,
+  handleUpdateProduct: PropTypes.func.isRequired,
 }
 
 const mapStateToProps = (state, ownProps) => {
@@ -53,15 +72,30 @@ const mapStateToProps = (state, ownProps) => {
   const productsById = getProductsById(state)
 
   const product = productsById[ownProps.match.params.id]
-  const categories = product.categories && product.categories.map(id => categoriesById[id]) || []
+  const productCategories = get(product, 'categories', [])
+  const categories = productCategories.map(id => categoriesById[id].id) || []
 
   return {
     productData: {
-      ...productsById[ownProps.match.params.id],
+      ...product,
       categories
     },
-    categoriesById
+    categoriesById: Object.entries(categoriesById)
   }
 }
 
-export default connect(mapStateToProps)(ProductsContainerUpdate)
+const mapDispatchToProps = dispatch => {
+  return {
+    fetchCategories: () => {
+      dispatch(fetchCategories())
+    },
+    fetchProducts: () => {
+      dispatch(fetchProducts())
+    },
+    handleUpdateProduct: (productData) => {
+      dispatch(updateProduct(productData))
+    },
+  }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(ProductsContainerUpdate)

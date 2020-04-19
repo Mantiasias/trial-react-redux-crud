@@ -1,5 +1,5 @@
 import { productApi } from '../gateways/ProductApi';
-import { last } from 'lodash'
+import { last, sortedUniqBy } from 'lodash'
 import moment from 'moment'
 
 export const REQUEST_PRODUCTS = 'REQUEST_PRODUCTS';
@@ -34,8 +34,8 @@ const updateProductAction = (productData) => ({
 
 export const fetchProducts = () => (dispatch, getState) => {
   dispatch(requestProductsAction());
-  const stateProducts = getState().products // @todo need to discuss that moment
-  const json = stateProducts.length > 0 ? stateProducts : productApi.getProducts();
+  const stateProducts = getState().products
+  const json = productApi.getProducts(stateProducts);
   dispatch(receiveProductsAction(json));
 };
 
@@ -44,12 +44,12 @@ export const deleteProduct = (id) => (dispatch) => {
 };
 
 export const createProduct = (productData) => (dispatch, getState) => {
-  const stateProducts = getState().products // @todo need to discuss that moment
-  // imagine, that we have sorted array always
-  const newProductDataId = last(stateProducts).id
+  const stateProducts = getState().products;
+  const byIdSortCallback = v => v.id
+  const newProductDataId = last(sortedUniqBy(stateProducts, byIdSortCallback));
   const newProductData = {
-    id: newProductDataId,
     ...productData,
+    id: newProductDataId ? newProductDataId + 1 : 1,
     createdAt: moment().toString()
   }
   dispatch(createProductAction(newProductData));
