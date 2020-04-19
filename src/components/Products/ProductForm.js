@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import { Button, Col, CustomInput, Form, FormFeedback, FormGroup, Input, Label, Row } from 'reactstrap'
-import { clamp, inRange } from 'lodash'
+import { clamp, head, inRange } from 'lodash'
 import moment from 'moment'
 
 const ProductForm = ({ productData, mode, formCallback, categoriesById }) => {
@@ -12,11 +12,11 @@ const ProductForm = ({ productData, mode, formCallback, categoriesById }) => {
   const [isExpirationDateValid, setIsExpirationDateValid] = useState(true)
   const [isSelectedCategoriesValid, setIsSelectedCategoriesValid] = useState(true)
 
-  const [name, setName] = useState(isUpdateMode ? productData.name : '')
-  const [brand, setBrand] = useState(isUpdateMode ? productData.brand : '')
+  const [name, setName] = useState(isUpdateMode ? productData.name : 'Your Product Name')
+  const [brand, setBrand] = useState(isUpdateMode ? productData.brand : 'Your Product Brand')
   const [rating, setRating] = useState(isUpdateMode ? productData.rating : 0)
   const [itemsInStock, setItemsInStock] = useState(isUpdateMode ? productData.itemsInStock : 0)
-  const [selectedCategories, setSelectedCategories] = useState(isUpdateMode ? productData.categories : [])
+  const [selectedCategories, setSelectedCategories] = useState(isUpdateMode ? productData.categories : head(categoriesById))
   const [featured, setFeatured] = useState(isUpdateMode ? productData.featured : false)
   const [expirationDate, setExpirationDate] = useState(isUpdateMode ? productData.expirationDate : null)
   const [receiptDate, setReceiptDate] = useState(isUpdateMode ? productData.expirationDate : null)
